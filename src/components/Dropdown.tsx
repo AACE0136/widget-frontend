@@ -17,6 +17,7 @@ interface DropdownProps {
   tagColor?: 'red' | 'blue' | 'green' | 'gray';
   disabled?: boolean;
   className?: string;
+  label?: string;
 }
 
 export default function Dropdown({
@@ -29,6 +30,7 @@ export default function Dropdown({
   tagColor = 'red',
   disabled = false,
   className = '',
+  label,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<(string | number)[]>(selectedValues);
@@ -87,12 +89,17 @@ export default function Dropdown({
 
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
+      {label && (
+        <label className="block text-[#6E7C87] text-base leading-6 mb-2">
+          {label}
+        </label>
+      )}
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
         className={`
-          min-h-[44px] bg-white border border-gray-300 rounded-lg px-3 py-2 
+          min-h-[44px] bg-white border border-gray-400 rounded-lg px-3 py-2 
           flex items-center justify-between gap-2 cursor-pointer
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-400'}
+          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-500'}
           transition-colors
         `}
       >
@@ -102,7 +109,7 @@ export default function Dropdown({
               <span
                 key={option.id}
                 className={`
-                  inline-flex items-center gap-2 px-3 py-1 rounded text-sm font-medium
+                  inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium
                   ${tagColorClasses[tagColor]}
                   transition-colors
                 `}

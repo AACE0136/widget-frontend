@@ -21,7 +21,9 @@ export default function WidgetScannerPage() {
         {/* Main content will go here */}
         <div className="bg-white rounded-lg shadow-sm py-12 px-16">
           <p className="text-[#1E1E1E] text-2xl mb-6">PBI External Widget Checker</p>
-          <Dropdown
+          <div className='flex gap-4'>
+             <Dropdown
+            label="Select Reports"
             options={sampleOptions}
             selectedValues={selectedReports}
             onChange={setSelectedReports}
@@ -31,6 +33,18 @@ export default function WidgetScannerPage() {
             tagColor="red"
             className="w-[50%]"
           />
+          <Dropdown
+            label="Select Reports"
+            options={sampleOptions}
+            selectedValues={selectedReports}
+            onChange={setSelectedReports}
+            placeholder="Select reports..."
+            multiSelect={true}
+            showTags={true}
+            tagColor="red"
+            className="w-[50%]"
+          />
+          </div>
         </div>
       </main>
     </div>
