@@ -160,10 +160,21 @@ export default function WidgetScannerPage() {
 
           {/* Output Section */}
            <h3 className="text-sm font-semibold text-[#6E7C87] mb-2">Output</h3>
-          <section id="output" className="mt-4 bg-[#F6F6F6] rounded-lg p-6 max-h-[400px] overflow-y-auto">
+          <section id="output" className="mt-4 bg-[#F6F6F6] rounded-lg p-6 max-h-[400px] overflow-y-auto mb-6">
            
             <Accordion items={accordionData} allowMultiple={true} />
           </section>
+          <div className='flex-row-reverse flex'>
+        <Button 
+              variant="filled" 
+              color="danger" 
+            //   icon={Search}
+              iconPosition="left"
+            >
+              Download as Excel
+            </Button>
+            </div>
+          
         </div>
       </main>
     </div>
