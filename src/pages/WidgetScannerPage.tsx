@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Dropdown, { type DropdownOption } from '../components/Dropdown';
 import Header from '../components/Header';
 import Button from '../components/Button';
+import Accordion, { type AccordionItem } from '../components/Accordion';
 
 const sampleOptions: DropdownOption[] = [
   { id: 1, label: 'Revenue Opportunities', value: 'revenue' },
@@ -10,6 +11,90 @@ const sampleOptions: DropdownOption[] = [
   { id: 4, label: 'Sales Performance', value: 'sales' },
   { id: 5, label: 'Marketing Dashboard', value: 'marketing' },
   { id: 6, label: 'Financial Overview', value: 'financial' },
+];
+
+const accordionData: AccordionItem[] = [
+  {
+    id: 1,
+    title: 'Starting Pipeline',
+    type: 'pipeline',
+    data: {
+      status: 'loading',
+      downloads: [
+        { progress: '1/7', name: 'Affine Org_test_visual' },
+        { progress: '2/7', name: 'Sales & Returns Sample v201912' },
+        { progress: '3/7', name: 'Affine Org_test_visual&expressions' },
+        { progress: '4/7', name: 'testing' },
+        { progress: '5/7', name: 'COVID 19 US Tracking Sample' },
+        { progress: '6/7', name: 'Life expectancy v202009' },
+        { progress: '7/7', name: 'testing' },
+      ],
+    },
+  },
+ 
+  {
+    id: 3,
+    title: 'Views',
+    type: 'views',
+    data: {
+      reports: [
+        {
+          id: '01',
+          workspaceName: 'PBI Comparision Tool',
+          workspaceColor: 'yellow',
+          reportName: 'Affine Org_test_visual',
+          widgetCount: 0,
+          owners: 'yatish.narasimhan@affine.ai, ravi.praneeth@affine.ai',
+        },
+        {
+          id: '02',
+          workspaceName: 'PBI Comparision Tool',
+          workspaceColor: 'yellow',
+          reportName: 'Affine Org_test_visual&expressions',
+          widgetCount: 0,
+          owners: 'deepjyoti.roy@affine.ai, madhu.m@affine.ai',
+        },
+        {
+          id: '03',
+          workspaceName: 'PBI Comparision Tool',
+          workspaceColor: 'yellow',
+          reportName: 'Testing',
+          widgetCount: 0,
+          owners: 'meepjyoti.roy@affine.ai, madhu.m@affine.ai',
+        },
+        {
+          id: '04',
+          workspaceName: 'PBI Clone Test',
+          workspaceColor: 'green',
+          reportName: 'Life expectancy v202009',
+          widgetCount: 0,
+          owners: 'madhu.m@affine.ai, ravi.praneeth@affine.ai',
+        },
+        {
+          id: '05',
+          workspaceName: 'PBI Clone Test',
+          workspaceColor: 'green',
+          reportName: 'COVID-19 US Tracking Sample',
+          widgetCount: 2,
+          owners: 'deepjyoti.roy@affine.ai, amit.kesharwani@affine.ai',
+        },
+      ],
+    },
+  },
+  {
+    id: 4,
+    title: 'Email Users',
+    type: 'email',
+    data: {
+      emails: [
+        'yatish.narasimhan@affine.ai',
+        'ravi.praneeth@affine.ai',
+        'deepjyoti.roy@affine.ai',
+        'madhu.m@affine.ai',
+        'amit.kesharwani@affine.ai',
+      ],
+    },
+  },
 ];
 
 export default function WidgetScannerPage() {
@@ -71,9 +156,14 @@ export default function WidgetScannerPage() {
             >
               Scan for widgets
             </Button>
-            
-            
           </div>
+
+          {/* Output Section */}
+           <h3 className="text-sm font-semibold text-[#6E7C87] mb-2">Output</h3>
+          <section id="output" className="mt-4 bg-[#F6F6F6] rounded-lg p-6 h-[500px] overflow-y-auto">
+           
+            <Accordion items={accordionData} allowMultiple={true} />
+          </section>
         </div>
       </main>
     </div>
