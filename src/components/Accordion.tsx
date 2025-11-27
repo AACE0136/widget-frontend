@@ -160,8 +160,8 @@ export default function Accordion({ items, allowMultiple = false, className = ''
               />
             </button>
             {isOpen(item.id) && (
-              <div className="border-t border-gray-200">
-                <div className="px-6 py-4">
+              <div className="">
+                <div className="px-6 py-2">
                   {itemType === 'pipeline' && renderPipelineContent(item.data)}
                   {itemType === 'views' && renderViewsContent(item.data)}
                   {itemType === 'email' && renderEmailContent(item.data)}
