@@ -90,7 +90,7 @@ export default function Dropdown({
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
       {label && (
-        <label className="block text-[#6E7C87] text-base leading-6 mb-2">
+        <label className="block text-[#6E7C87] text-sm leading-6 mb-2 ml-2">
           {label}
         </label>
       )}
@@ -125,7 +125,7 @@ export default function Dropdown({
               </span>
             ))
           ) : (
-            <span className="text-gray-400 text-sm">{placeholder}</span>
+            <span className="text-[#1E1E1E] text-sm font-normal">{placeholder}</span>
           )}
         </div>
 

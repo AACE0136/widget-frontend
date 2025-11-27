@@ -110,14 +110,14 @@ export default function WidgetScannerPage() {
       <main className="max-w-[1920px] mx-auto px-6 pb-8 bg-[#F6F6F6]">
         {/* Main content will go here */}
         <div className="bg-white rounded-2xl shadow-sm py-12 px-16">
-          <p className="text-[#1E1E1E] text-2xl mb-8">PBI External Widget Checker</p>
+          <p className="text-[#1E1E1E] text-[32px] mb-8">PBI External Widget Checker</p>
           <div className='flex gap-4 mb-6'>
              <Dropdown
             label="Select Workspace"
             options={sampleOptions}
             selectedValues={selectedWorkspaces}
             onChange={setSelectedWorkspaces}
-            placeholder="Select Workspace..."
+            placeholder="Choose an option"
             multiSelect={true}
             showTags={true}
             tagColor="red"
@@ -128,7 +128,7 @@ export default function WidgetScannerPage() {
             options={sampleOptions}
             selectedValues={selectedReports}
             onChange={setSelectedReports}
-            placeholder="Select reports..."
+            placeholder="Choose an option"
             multiSelect={true}
             showTags={true}
             tagColor="red"
