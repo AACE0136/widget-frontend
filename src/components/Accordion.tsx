@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Loader2, CheckCircle2, Mail } from 'lucide-react';
+import { ChevronDown, Loader, CheckCircle2, Mail } from 'lucide-react';
 
 export interface AccordionItem {
   id: string | number;
@@ -33,13 +33,13 @@ export default function Accordion({ items, allowMultiple = false, className = ''
   const renderIcon = (type?: string, status?: string) => {
     if (type === 'pipeline') {
       return status === 'loading' ? (
-        <Loader2 size={20} className="text-blue-600 animate-spin" />
+        <Loader size={20} className="text-black animate-spin" />
       ) : (
         <CheckCircle2 size={20} className="text-green-600" />
       );
     }
     if (type === 'views') {
-      return <Loader2 size={20} className="text-blue-600 animate-spin" />;
+      return <Loader size={20} className="text-black animate-spin" />;
     }
     if (type === 'email') {
       return <Mail size={20} className="text-gray-600" />;
@@ -142,15 +142,15 @@ export default function Accordion({ items, allowMultiple = false, className = ''
         return (
           <div
             key={item.id}
-            className="border border-gray-200 rounded-lg overflow-hidden bg-white"
+            className="border border-[#1E1E1E] rounded-lg overflow-hidden bg-white"
           >
             <button
               onClick={() => toggleItem(item.id)}
-              className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-gray-50 transition-colors"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {renderIcon(itemType, itemStatus)}
-                <span className="font-semibold text-gray-900">{item.title}</span>
+                <span className="font-normal text-gray-900">{item.title}</span>
               </div>
               <ChevronDown
                 size={20}

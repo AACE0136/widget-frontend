@@ -16,7 +16,7 @@ const sampleOptions: DropdownOption[] = [
 const accordionData: AccordionItem[] = [
   {
     id: 1,
-    title: 'Starting Pipeline',
+    title: 'Pipeline',
     type: 'pipeline',
     data: {
       status: 'loading',
@@ -99,7 +99,7 @@ const accordionData: AccordionItem[] = [
 
 export default function WidgetScannerPage() {
   const [selectedReports, setSelectedReports] = useState<(string | number)[]>([1, 2]);
-
+  const [selectedWorkspaces, setSelectedWorkspaces] = useState<(string | number)[]>([1, 2]);
   const handleReset = () => {
     setSelectedReports([]);
   };
@@ -113,11 +113,11 @@ export default function WidgetScannerPage() {
           <p className="text-[#1E1E1E] text-2xl mb-6">PBI External Widget Checker</p>
           <div className='flex gap-4 mb-6'>
              <Dropdown
-            label="Select Reports"
+            label="Select Workspace"
             options={sampleOptions}
-            selectedValues={selectedReports}
-            onChange={setSelectedReports}
-            placeholder="Select reports..."
+            selectedValues={selectedWorkspaces}
+            onChange={setSelectedWorkspaces}
+            placeholder="Select Workspace..."
             multiSelect={true}
             showTags={true}
             tagColor="red"
@@ -160,7 +160,7 @@ export default function WidgetScannerPage() {
 
           {/* Output Section */}
            <h3 className="text-sm font-semibold text-[#6E7C87] mb-2">Output</h3>
-          <section id="output" className="mt-4 bg-[#F6F6F6] rounded-lg p-6 max-h-[400px] overflow-y-auto mb-6">
+          <section id="output" className="mt-4 bg-[#F6F6F6] rounded-lg p-6 max-h-[400px] overflow-y-auto mb-6 border border-[#1E1E1E]">
            
             <Accordion items={accordionData} allowMultiple={true} />
           </section>
