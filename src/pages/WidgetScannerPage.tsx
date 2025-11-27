@@ -110,7 +110,7 @@ export default function WidgetScannerPage() {
       <main className="max-w-[1920px] mx-auto px-6 pb-8 bg-[#F6F6F6]">
         {/* Main content will go here */}
         <div className="bg-white rounded-2xl shadow-sm py-12 px-16">
-          <p className="text-[#1E1E1E] text-2xl mb-6">PBI External Widget Checker</p>
+          <p className="text-[#1E1E1E] text-2xl mb-8">PBI External Widget Checker</p>
           <div className='flex gap-4 mb-6'>
              <Dropdown
             label="Select Workspace"
@@ -150,7 +150,8 @@ export default function WidgetScannerPage() {
             </Button>
             <Button 
               variant="filled" 
-              color="danger" 
+              color="danger"
+              
             //   icon={Search}
               iconPosition="left"
             >
@@ -160,7 +161,7 @@ export default function WidgetScannerPage() {
 
           {/* Output Section */}
            <h3 className="text-sm font-semibold text-[#6E7C87] mb-2">Output</h3>
-          <section id="output" className="mt-4 bg-[#F6F6F6] rounded-lg p-6 max-h-[400px] overflow-y-auto mb-6 border border-[#1E1E1E]">
+          <section id="output" className="mt-4 bg-[#F6F6F6] rounded-lg p-3 max-h-[400px] overflow-y-auto mb-6 border border-[#1E1E1E]">
            
             <Accordion items={accordionData} allowMultiple={true} />
           </section>

@@ -146,7 +146,7 @@ export default function Accordion({ items, allowMultiple = false, className = ''
           >
             <button
               onClick={() => toggleItem(item.id)}
-              className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-between px-2 pt-2 pb-1 text-left "
             >
               <div className="flex items-center gap-2">
                 {renderIcon(itemType, itemStatus)}
