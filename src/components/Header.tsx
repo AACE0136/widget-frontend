@@ -1,13 +1,20 @@
 import logo from '../assets/logo.svg';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../store/hooks';
+import { useMsal } from '@azure/msal-react';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
 
 export default function Header() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { instance } = useMsal();
+  const authMethod = useAppSelector((state) => state.auth.authMethod);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (authMethod === 'sso') {
+      // Microsoft SSO logout
+      await instance.logoutPopup();
+    }
     dispatch(logout());
     navigate('/');
   };
