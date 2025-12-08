@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout } from '../store/slices/authSlice';
+import { authService } from '../services/authService';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -11,6 +12,9 @@ export default function Header() {
   const authMethod = useAppSelector((state) => state.auth.authMethod);
 
   const handleLogout = async () => {
+    // Clear backend tokens
+    authService.clearTokens();
+    
     if (authMethod === 'sso') {
       // Microsoft SSO logout
       await instance.logoutPopup();

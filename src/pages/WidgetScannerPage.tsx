@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Dropdown, { type DropdownOption } from '../components/Dropdown';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Accordion, { type AccordionItem } from '../components/Accordion';
+import { useGetWorkspacesQuery, useLazyGetReportsByWorkspaceQuery, useScanForWidgetsMutation } from '../store/slices/apiSlice';
 
-const sampleOptions: DropdownOption[] = [
+const sampleReportOptions: DropdownOption[] = [
   { id: 1, label: 'Revenue Opportunities', value: 'revenue' },
   { id: 2, label: 'Affine Org Utilization Report', value: 'affine' },
   { id: 3, label: 'Customer Analytics', value: 'analytics' },
@@ -98,10 +99,68 @@ const accordionData: AccordionItem[] = [
 ];
 
 export default function WidgetScannerPage() {
-  const [selectedReports, setSelectedReports] = useState<(string | number)[]>([1, 2]);
-  const [selectedWorkspaces, setSelectedWorkspaces] = useState<(string | number)[]>([1, 2]);
+  const [selectedReports, setSelectedReports] = useState<(string | number)[]>([]);
+  const [selectedWorkspaces, setSelectedWorkspaces] = useState<(string | number)[]>([]);
+  
+  const { data: workspaces, isLoading: isLoadingWorkspaces } = useGetWorkspacesQuery();
+  const [getReports, { data: reports, isLoading: isLoadingReports }] = useLazyGetReportsByWorkspaceQuery();
+  const [scanForWidgets, { isLoading: isScanning }] = useScanForWidgetsMutation();
+
+  const workspaceOptions: DropdownOption[] = workspaces 
+    ? workspaces.map((workspace) => ({
+        id: workspace.id,
+        label: workspace.name,
+        value: workspace.id,
+      }))
+    : [
+        { id: 'b1fb33ce-0258-441f-b99f-873dcbae8e38', label: 'Test1', value: 'b1fb33ce-0258-441f-b99f-873dcbae8e38' },
+        { id: 'd1499501-269a-417b-a40d-ba9225004aa5', label: 'PBI Comparison Tool', value: 'd1499501-269a-417b-a40d-ba9225004aa5' },
+        { id: 'f589cf89-db7d-4422-9722-553233ac5135', label: 'PBI Cone Test', value: 'f589cf89-db7d-4422-9722-553233ac5135' },
+      ];
+
+  const reportOptions: DropdownOption[] = reports
+    ? reports.map((report) => ({
+        id: report.id,
+        label: report.name,
+        value: report.id,
+      }))
+    : [];
+
+  // Fetch reports when workspace selection changes
+  useEffect(() => {
+    if (selectedWorkspaces.length > 0) {
+      // Fetch reports for the first selected workspace
+      const workspaceId = selectedWorkspaces[0].toString();
+      getReports(workspaceId);
+    } else {
+      // Clear reports if no workspace is selected
+      setSelectedReports([]);
+    }
+  }, [selectedWorkspaces, getReports]);
+
+  const handleScan = async () => {
+    if (selectedWorkspaces.length === 0 || selectedReports.length === 0) {
+      alert('Please select at least one workspace and one report');
+      return;
+    }
+
+    try {
+      const result = await scanForWidgets({
+        workspaceIds: selectedWorkspaces.map(id => id.toString()),
+        reportIds: selectedReports.map(id => id.toString()),
+      }).unwrap();
+      
+      console.log('Scan successful:', result);
+      // TODO: Update accordionData with scan results
+    } catch (error) {
+      console.error('Scan failed:', error);
+      alert('Failed to scan for widgets. Please try again.');
+    }
+  };
+
   const handleReset = () => {
     setSelectedReports([]);
+    setSelectedWorkspaces([]);
   };
 
   return (
@@ -114,10 +173,10 @@ export default function WidgetScannerPage() {
           <div className='flex gap-4 mb-6'>
              <Dropdown
             label="Select Workspace"
-            options={sampleOptions}
+            options={workspaceOptions}
             selectedValues={selectedWorkspaces}
             onChange={setSelectedWorkspaces}
-            placeholder="Choose an option"
+            placeholder={isLoadingWorkspaces ? 'Loading workspaces...' : 'Choose an option'}
             multiSelect={true}
             showTags={true}
             tagColor="red"
@@ -125,10 +184,10 @@ export default function WidgetScannerPage() {
           />
           <Dropdown
             label="Select Reports"
-            options={sampleOptions}
+            options={reportOptions}
             selectedValues={selectedReports}
             onChange={setSelectedReports}
-            placeholder="Choose an option"
+            placeholder={isLoadingReports ? 'Loading reports...' : selectedWorkspaces.length === 0 ? 'Select a workspace first' : 'Choose reports'}
             multiSelect={true}
             showTags={true}
             tagColor="red"
@@ -151,11 +210,12 @@ export default function WidgetScannerPage() {
             <Button 
               variant="filled" 
               color="danger"
-              
+              onClick={handleScan}
+              disabled={isScanning || selectedWorkspaces.length === 0 || selectedReports.length === 0}
             //   icon={Search}
               iconPosition="left"
             >
-              Scan for widgets
+              {isScanning ? 'Scanning...' : 'Scan for widgets'}
             </Button>
           </div>
 

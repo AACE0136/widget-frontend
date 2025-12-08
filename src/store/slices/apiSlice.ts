@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { authService } from "../../services/authService";
 
 interface User {
   id: number;
@@ -6,13 +7,65 @@ interface User {
   email: string;
 }
 
+interface Workspace {
+  id: string;
+  name: string;
+}
+
+interface Report {
+  id: string;
+  name: string;
+}
+
+interface ScanRequest {
+  workspaceIds: string[];
+  reportIds: string[];
+}
+
+interface ScanResponse {
+  // Add response structure based on your API response
+  message?: string;
+  data?: any;
+}
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:4567";
+
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://jsonplaceholder.typicode.com",
+    baseUrl: API_BASE_URL,
+    prepareHeaders: (headers) => {
+      const token = authService.getStoredToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
   }),
-  tagTypes: ["User"],
+  tagTypes: ["User", "Workspace"],
   endpoints: (builder) => ({
+    // Workspace endpoints
+    getWorkspaces: builder.query<Workspace[], void>({
+      query: () => "/workspaces",
+      providesTags: ["Workspace"],
+    }),
+
+    // Reports endpoint - depends on workspace selection
+    getReportsByWorkspace: builder.query<Report[], string>({
+      query: (workspaceId) => `/workspaces/${workspaceId}/reports`,
+      providesTags: ["Workspace"],
+    }),
+
+    // Scan mutation - POST request
+    scanForWidgets: builder.mutation<ScanResponse, ScanRequest>({
+      query: (scanData) => ({
+        url: "/scan",
+        method: "POST",
+        body: scanData,
+      }),
+    }),
+
     // Query example - GET request
     getUsers: builder.query<User[], void>({
       query: () => "/users",
@@ -57,6 +110,10 @@ export const apiSlice = createApi({
 });
 
 export const {
+  useGetWorkspacesQuery,
+  useGetReportsByWorkspaceQuery,
+  useLazyGetReportsByWorkspaceQuery,
+  useScanForWidgetsMutation,
   useGetUsersQuery,
   useGetUserQuery,
   useCreateUserMutation,

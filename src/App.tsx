@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { useAppSelector, useAppDispatch } from './store/hooks';
 import { login } from './store/slices/authSlice';
+import { authService } from './services/authService';
 import LoginPage from './pages/LoginPage';
 import WidgetScannerPage from './pages/WidgetScannerPage';
 import PrivateRoute from './components/PrivateRoute';
@@ -11,22 +12,53 @@ import './App.css';
 function App() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const isMsalAuthenticated = useIsAuthenticated();
-  const { accounts } = useMsal();
+  const { accounts, instance } = useMsal();
   const dispatch = useAppDispatch();
 
   // Check if user is authenticated via MSAL on app load/refresh
   useEffect(() => {
-    if (isMsalAuthenticated && accounts.length > 0 && !isAuthenticated) {
-      const account = accounts[0];
-      dispatch(
-        login({
-          email: account.username,
-          name: account.name,
-          method: 'sso',
-        })
-      );
-    }
-  }, [isMsalAuthenticated, accounts, isAuthenticated, dispatch]);
+    const restoreSession = async () => {
+      if (isMsalAuthenticated && accounts.length > 0 && !isAuthenticated) {
+        const account = accounts[0];
+        console.log("ACCOUNT:",account);
+        
+        // Check if backend token exists and is valid
+        if (authService.isTokenValid()) {
+          dispatch(
+            login({
+              email: account.username,
+              name: account.name,
+              method: 'sso',
+            })
+          );
+        } else {
+          // Token expired or doesn't exist, try to get a new one
+          try {
+            const tokenResponse = await instance.acquireTokenSilent({
+              scopes: ['User.Read'],
+              account: account,
+            });
+            
+            if (tokenResponse.idToken) {
+              await authService.getBackendToken(tokenResponse.idToken);
+              dispatch(
+                login({
+                  email: account.username,
+                  name: account.name,
+                  method: 'sso',
+                })
+              );
+            }
+          } catch (error) {
+            console.error('Failed to restore session:', error);
+            authService.clearTokens();
+          }
+        }
+      }
+    };
+
+    restoreSession();
+  }, [isMsalAuthenticated, accounts, isAuthenticated, dispatch, instance]);
 
   return (
     <BrowserRouter>

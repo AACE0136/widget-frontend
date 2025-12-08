@@ -4,6 +4,7 @@ import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../store/hooks';
 import { login } from '../store/slices/authSlice';
 import { loginRequest } from '../config/authConfig';
+import { authService } from '../services/authService';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -32,16 +33,27 @@ export default function LoginPage() {
 
     try {
       const response = await instance.loginPopup(loginRequest);
+      console.log("MSAL RESPONSE:",response.idToken);
       
-      if (response.account) {
-        dispatch(
-          login({
-            email: response.account.username,
-            name: response.account.name,
-            method: 'sso',
-          })
-        );
-        navigate('/widget-scanner');
+      if (response.account && response.idToken) {
+        // Call backend API to get backend token
+        try {
+          await authService.getBackendToken(response.idToken);
+          
+          dispatch(
+            login({
+              email: response.account.username,
+              name: response.account.name,
+              method: 'sso',
+            })
+          );
+          navigate('/widget-scanner');
+        } catch (backendError) {
+          console.error('Backend token exchange failed:', backendError);
+          setError('Failed to authenticate with backend server. Please try again.');
+          // Logout from MSAL if backend authentication fails
+          await instance.logoutPopup();
+        }
       }
     } catch (error: any) {
       console.error('Microsoft login failed:', error);
