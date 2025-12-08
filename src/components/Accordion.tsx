@@ -74,9 +74,9 @@ export default function Accordion({ items, allowMultiple = false, className = ''
     }
 
     return (
-      <div className="space-y-4 max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+      <div className="space-y-4">
         {/* Tabs */}
-        <div className="flex gap-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+        <div className="flex gap-6 border-b border-gray-200 bg-white">
           <button 
             onClick={() => setActiveTab('summary')}
             className={`pb-2 text-sm font-medium ${
@@ -101,9 +101,9 @@ export default function Accordion({ items, allowMultiple = false, className = ''
 
         {/* Summary Table */}
         {activeTab === 'summary' && data?.summaryReports && (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-gray-200 sticky top-10 bg-white">
+              <thead className="border-b border-gray-200 bg-white">
                 <tr className="text-left">
                   <th className="pb-3 font-medium text-gray-600 w-16">ID ↑</th>
                   <th className="pb-3 font-medium text-gray-600 w-40">Workspace Name</th>
@@ -143,9 +143,9 @@ export default function Accordion({ items, allowMultiple = false, className = ''
 
         {/* Detailed Table */}
         {activeTab === 'detailed' && data?.detailedReports && (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-gray-200 sticky top-10 bg-white">
+              <thead className="border-b border-gray-200 bg-white">
                 <tr className="text-left">
                   <th className="pb-3 font-medium text-gray-600 w-16">ID ↑</th>
                   <th className="pb-3 font-medium text-gray-600 w-40">Workspace</th>
