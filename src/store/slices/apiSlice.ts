@@ -22,11 +22,46 @@ interface ScanRequest {
   reportIds: string[];
 }
 
-interface ScanResponse {
-  // Add response structure based on your API response
-  message?: string;
-  data?: any;
+interface ScanSummaryItem {
+  Workspace_Name: string;
+  Workspace_ID: string;
+  Report_Name: string;
+  Report_ID: string;
+  "External_Widgets_(Y/N)": string;
+  External_Widgets_Count: number;
+  Report_Owners: string;
 }
+
+interface ScanDetailItem {
+  Workspace_Name: string;
+  Workspace_ID: string;
+  Report_Name: string;
+  Report_ID: string;
+  Installed_Widgets: string;
+  Installed_Widgets_Short: string;
+  Is_used: string;
+  "Custom Visual": string;
+  Publisher: string;
+  Description: string;
+  Version: string;
+  LegalTerms: string;
+  PrivacyPolicyUrl: string;
+  SupportLink: string;
+  "Release Date": string;
+  "AppSource Link": string;
+  "Is Certified": string;
+  "Versioned pbiviz": string;
+  "Visual GUID": string;
+}
+
+interface ScanResponse {
+  summary: ScanSummaryItem[];
+  details: ScanDetailItem[];
+  emailPreview: string;
+  excelFileId: string;
+}
+
+export type { ScanResponse, ScanSummaryItem, ScanDetailItem };
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:4567";

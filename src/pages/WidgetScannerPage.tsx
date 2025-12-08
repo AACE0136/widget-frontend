@@ -3,7 +3,7 @@ import Dropdown, { type DropdownOption } from '../components/Dropdown';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Accordion, { type AccordionItem } from '../components/Accordion';
-import { useGetWorkspacesQuery, useLazyGetReportsByWorkspaceQuery, useScanForWidgetsMutation } from '../store/slices/apiSlice';
+import { useGetWorkspacesQuery, useLazyGetReportsByWorkspaceQuery, useScanForWidgetsMutation, type ScanResponse } from '../store/slices/apiSlice';
 
 const sampleReportOptions: DropdownOption[] = [
   { id: 1, label: 'Revenue Opportunities', value: 'revenue' },
@@ -101,10 +101,13 @@ const accordionData: AccordionItem[] = [
 export default function WidgetScannerPage() {
   const [selectedReports, setSelectedReports] = useState<(string | number)[]>([]);
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<(string | number)[]>([]);
-  
+  const [scanResults, setScanResults] = useState<ScanResponse | null>(null);
   const { data: workspaces, isLoading: isLoadingWorkspaces } = useGetWorkspacesQuery();
   const [getReports, { data: reports, isLoading: isLoadingReports }] = useLazyGetReportsByWorkspaceQuery();
   const [scanForWidgets, { isLoading: isScanning }] = useScanForWidgetsMutation();
+
+
+  console.log("Scan Results:", scanResults);
 
   const workspaceOptions: DropdownOption[] = workspaces 
     ? workspaces.map((workspace) => ({
@@ -151,7 +154,7 @@ export default function WidgetScannerPage() {
       }).unwrap();
       
       console.log('Scan successful:', result);
-      // TODO: Update accordionData with scan results
+      setScanResults(result);
     } catch (error) {
       console.error('Scan failed:', error);
       alert('Failed to scan for widgets. Please try again.');
@@ -161,7 +164,74 @@ export default function WidgetScannerPage() {
   const handleReset = () => {
     setSelectedReports([]);
     setSelectedWorkspaces([]);
+    setScanResults(null);
   };
+
+  // Extract unique emails from scan results
+  const uniqueEmails = scanResults
+    ? Array.from(
+        new Set(
+          scanResults.summary
+            .map((item) => item.Report_Owners.split(';'))
+            .flat()
+            .filter((email) => email.trim())
+        )
+      )
+    : [];
+
+  // Build accordion data from scan results
+  const accordionData: AccordionItem[] = scanResults
+    ? [
+        {
+          id: 1,
+          title: 'Pipeline',
+          type: 'pipeline',
+          data: {
+            status: 'complete',
+            downloads: scanResults.summary.map((item, index) => ({
+              progress: `${index + 1}/${scanResults.summary.length}`,
+              name: item.Report_Name,
+            })),
+          },
+        },
+        {
+          id: 2,
+          title: 'Views',
+          type: 'views',
+          data: {
+            summaryReports: scanResults.summary.map((item, index) => ({
+              id: (index + 1).toString().padStart(2, '0'),
+              workspaceName: item.Workspace_Name,
+              workspaceColor: index % 2 === 0 ? 'yellow' : 'green',
+              reportName: item.Report_Name,
+              widgetCount: item.External_Widgets_Count,
+              owners: item.Report_Owners.replace(/;/g, ', '),
+            })),
+            detailedReports: scanResults.details?.length > 0 
+              ? scanResults.details.map((detail) => ({
+                  workspaceName: detail.Workspace_Name,
+                  reportName: detail.Report_Name,
+                  widgetShort: detail.Installed_Widgets_Short,
+                  customVisual: detail['Custom Visual'],
+                  publisher: detail.Publisher,
+                  version: detail.Version,
+                  isCertified: detail['Is Certified'],
+                }))
+              : [],
+          },
+        },
+        {
+          id: 3,
+          title: 'Email Users',
+          type: 'email',
+          data: {
+            emails: uniqueEmails,
+          },
+        },
+      ]
+    : [];
+
+    console.log("Accordion Data:", accordionData);
 
   return (
     <div className="min-h-screen bg-[#F6F6F6]">
@@ -222,8 +292,11 @@ export default function WidgetScannerPage() {
           {/* Output Section */}
            <h3 className="text-sm font-semibold text-[#6E7C87] mb-2">Output</h3>
           <section id="output" className="mt-4 bg-[#F6F6F6] rounded-lg p-3 max-h-[400px] overflow-y-auto mb-6 border border-[#1E1E1E]">
-           
+           {scanResults ? (
             <Accordion items={accordionData} allowMultiple={true} />
+           ) : (
+            <p className="text-center text-[#6E7C87] py-8">No scan results yet. Please select workspaces and reports, then click "Scan for widgets".</p>
+           )}
           </section>
           <div className='flex-row-reverse flex'>
         <Button 
