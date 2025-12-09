@@ -180,7 +180,38 @@ export default function WidgetScannerPage() {
     : [];
 
   // Build accordion data from scan results
-  const accordionData: AccordionItem[] = scanResults
+  const accordionData: AccordionItem[] = isScanning
+    ? [
+        {
+          id: 1,
+          title: 'Pipeline',
+          type: 'pipeline',
+          data: {
+            status: 'loading',
+            downloads: [{ progress: '', name: 'Starting pipeline...' }],
+          },
+        },
+        {
+          id: 2,
+          title: 'Views',
+          type: 'views',
+          data: {
+            status: 'loading',
+            summaryReports: [],
+            detailedReports: [],
+          },
+        },
+        {
+          id: 3,
+          title: 'Email Users',
+          type: 'email',
+          data: {
+            status: 'loading',
+            emails: [],
+          },
+        },
+      ]
+    : scanResults
     ? [
         {
           id: 1,
@@ -199,6 +230,7 @@ export default function WidgetScannerPage() {
           title: 'Views',
           type: 'views',
           data: {
+            status: 'complete',
             summaryReports: scanResults.summary.map((item, index) => ({
               id: (index + 1).toString().padStart(2, '0'),
               workspaceName: item.Workspace_Name,
@@ -225,6 +257,7 @@ export default function WidgetScannerPage() {
           title: 'Email Users',
           type: 'email',
           data: {
+            status: 'complete',
             emails: uniqueEmails,
           },
         },
@@ -292,7 +325,7 @@ export default function WidgetScannerPage() {
           {/* Output Section */}
            <h3 className="text-sm font-semibold text-[#6E7C87] mb-2">Output</h3>
           <section id="output" className="mt-4 bg-[#F6F6F6] rounded-lg p-3 max-h-[400px] overflow-y-auto mb-6 border border-[#1E1E1E]">
-           {scanResults ? (
+           {isScanning || scanResults ? (
             <Accordion items={accordionData} allowMultiple={true} />
            ) : (
             <p className="text-center text-[#6E7C87] py-8">No scan results yet. Please select workspaces and reports, then click "Scan for widgets".</p>

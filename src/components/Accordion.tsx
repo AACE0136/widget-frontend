@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Loader, CheckCircle2, Mail } from 'lucide-react';
+import { ChevronDown, Loader,  Mail, Check } from 'lucide-react';
 
 export interface AccordionItem {
   id: string | number;
@@ -36,11 +36,15 @@ export default function Accordion({ items, allowMultiple = false, className = ''
       return status === 'loading' ? (
         <Loader size={20} className="text-black animate-spin" />
       ) : (
-        <CheckCircle2 size={20} className="text-green-600" />
+        <Check size={20}  />
       );
     }
     if (type === 'views') {
-      return <Loader size={20} className="text-black animate-spin" />;
+      return status === 'loading' ? (
+        <Loader size={20} className="text-black animate-spin" />
+      ) : (
+        <Check size={20}  />
+      );
     }
     if (type === 'email') {
       return <Mail size={20} className="text-gray-600" />;
@@ -227,7 +231,7 @@ export default function Accordion({ items, allowMultiple = false, className = ''
           >
             <button
               onClick={() => toggleItem(item.id)}
-              className="w-full flex items-center justify-between px-2 pt-2 pb-1 text-left "
+              className="w-full flex items-center justify-between px-2 py-1 text-left "
             >
               <div className="flex items-center gap-2">
                 {renderIcon(itemType, itemStatus)}
