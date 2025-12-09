@@ -101,6 +101,14 @@ export const apiSlice = createApi({
       }),
     }),
 
+    // Download Excel file
+    downloadExcel: builder.query<Blob, string>({
+      query: (fileId) => ({
+        url: `/download?file_path=${fileId}`,
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+
     // Query example - GET request
     getUsers: builder.query<User[], void>({
       query: () => "/users",
@@ -149,6 +157,7 @@ export const {
   useGetReportsByWorkspaceQuery,
   useLazyGetReportsByWorkspaceQuery,
   useScanForWidgetsMutation,
+  useLazyDownloadExcelQuery,
   useGetUsersQuery,
   useGetUserQuery,
   useCreateUserMutation,

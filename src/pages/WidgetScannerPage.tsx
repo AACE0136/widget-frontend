@@ -3,7 +3,7 @@ import Dropdown, { type DropdownOption } from '../components/Dropdown';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Accordion, { type AccordionItem } from '../components/Accordion';
-import { useGetWorkspacesQuery, useLazyGetReportsByWorkspaceQuery, useScanForWidgetsMutation, type ScanResponse } from '../store/slices/apiSlice';
+import { useGetWorkspacesQuery, useLazyGetReportsByWorkspaceQuery, useScanForWidgetsMutation, useLazyDownloadExcelQuery, type ScanResponse } from '../store/slices/apiSlice';
 
 const sampleReportOptions: DropdownOption[] = [
   { id: 1, label: 'Revenue Opportunities', value: 'revenue' },
@@ -105,6 +105,7 @@ export default function WidgetScannerPage() {
   const { data: workspaces, isLoading: isLoadingWorkspaces } = useGetWorkspacesQuery();
   const [getReports, { data: reports, isLoading: isLoadingReports }] = useLazyGetReportsByWorkspaceQuery();
   const [scanForWidgets, { isLoading: isScanning }] = useScanForWidgetsMutation();
+  const [downloadExcel, { isLoading: isDownloading }] = useLazyDownloadExcelQuery();
 
 
   console.log("Scan Results:", scanResults);
@@ -160,13 +161,37 @@ export default function WidgetScannerPage() {
       alert('Failed to scan for widgets. Please try again.');
     }
   };
-
   const handleReset = () => {
     setSelectedReports([]);
     setSelectedWorkspaces([]);
     setScanResults(null);
   };
 
+  const handleDownloadExcel = async () => {
+    if (!scanResults?.excelFileId) {
+      alert('No Excel file available to download');
+      return;
+    }
+
+    try {
+      const result = await downloadExcel(scanResults.excelFileId).unwrap();
+      
+      // Create a download link and trigger it
+      const url = window.URL.createObjectURL(result);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `widget_scan_results_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download Excel file. Please try again.');
+    }
+  };
+
+  // Extract unique emails from scan results
   // Extract unique emails from scan results
   const uniqueEmails = scanResults
     ? Array.from(
@@ -280,7 +305,7 @@ export default function WidgetScannerPage() {
             selectedValues={selectedWorkspaces}
             onChange={setSelectedWorkspaces}
             placeholder={isLoadingWorkspaces ? 'Loading workspaces...' : 'Choose an option'}
-            multiSelect={true}
+            multiSelect={false}
             showTags={true}
             tagColor="red"
             className="w-[50%]"
@@ -332,15 +357,17 @@ export default function WidgetScannerPage() {
            )}
           </section>
           <div className='flex-row-reverse flex'>
-        <Button 
+            <Button 
               variant="filled" 
               color="danger" 
+              onClick={handleDownloadExcel}
+              disabled={isScanning || !scanResults?.excelFileId || isDownloading}
             //   icon={Search}
               iconPosition="left"
             >
-              Download as Excel
+              {isDownloading ? 'Downloading...' : 'Download as Excel'}
             </Button>
-            </div>
+          </div>
           
         </div>
       </main>
