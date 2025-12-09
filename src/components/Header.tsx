@@ -12,13 +12,30 @@ export default function Header() {
   const authMethod = useAppSelector((state) => state.auth.authMethod);
 
   const handleLogout = async () => {
+    // Show confirmation dialog
+    const confirmed = window.confirm('Are you sure you want to logout?');
+    
+    if (!confirmed) {
+      return; // User cancelled, do nothing
+    }
+
     // Clear backend tokens
     authService.clearTokens();
     
     if (authMethod === 'sso') {
-      // Microsoft SSO logout
-      await instance.logoutPopup();
+      // For SSO, just clear MSAL cache without popup
+      try {
+        const accounts = instance.getAllAccounts();
+        if (accounts.length > 0) {
+          // Clear the cache silently
+          instance.clearCache();
+        }
+      } catch (error) {
+        console.error('Error clearing MSAL cache:', error);
+      }
     }
+    
+    // Dispatch logout and navigate
     dispatch(logout());
     navigate('/');
   };

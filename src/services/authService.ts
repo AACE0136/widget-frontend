@@ -63,5 +63,12 @@ export const authService = {
     localStorage.removeItem("backend_token");
     localStorage.removeItem("backend_refresh_token");
     localStorage.removeItem("backend_token_expiry");
+
+    // Clear all MSAL related items from localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("msal.") || key.includes("msal")) {
+        localStorage.removeItem(key);
+      }
+    });
   },
 };
