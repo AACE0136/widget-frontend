@@ -284,6 +284,7 @@ export default function WidgetScannerPage() {
           data: {
             status: 'complete',
             emails: uniqueEmails,
+            emailPreview: scanResults.emailPreview,
           },
         },
       ]

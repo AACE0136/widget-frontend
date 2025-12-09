@@ -204,16 +204,42 @@ export default function Accordion({ items, allowMultiple = false, className = ''
   };
 
   const renderEmailContent = (data: any) => {
-    if (!data?.emails) return null;
+    if (!data?.emails && !data?.emailPreview) return null;
 
     return (
-      <div className="text-sm text-gray-700 max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-        <p className="mb-2">The following users will be notified:</p>
-        <div className="space-y-1">
-          {data.emails.map((email: string, index: number) => (
-            <div key={index} className="text-blue-600">{email}</div>
-          ))}
-        </div>
+      <div className="text-sm text-gray-700 max-h-[400px] overflow-y-auto">
+        {data?.emailPreview ? (
+          <>
+            {(() => {
+              // Split by double newline to separate header from body
+              const parts = data.emailPreview.split('\n\n');
+              // First two parts are the greeting and intro message
+              const header = parts.slice(0, 2).join('\n\n');
+              // Rest is the body content
+              const body = parts.slice(2).join('\n\n');
+              
+              return (
+                <>
+                  <div className="mb-4 text-gray-800 whitespace-pre-line">
+                    {header}
+                  </div>
+                  <div className="whitespace-pre-wrap font-mono text-xs bg-gray-50 p-4 rounded border border-gray-200">
+                    {body}
+                  </div>
+                </>
+              );
+            })()}
+          </>
+        ) : (
+          <>
+            <p className="mb-2">The following users will be notified:</p>
+            <div className="space-y-1">
+              {data.emails.map((email: string, index: number) => (
+                <div key={index} className="text-blue-600">{email}</div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     );
   };
