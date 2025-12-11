@@ -102,8 +102,11 @@ export default function WidgetScannerPage() {
   const [selectedReports, setSelectedReports] = useState<(string | number)[]>([]);
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<(string | number)[]>([]);
   const [scanResults, setScanResults] = useState<ScanResponse | null>(null);
+  const [allReports, setAllReports] = useState<DropdownOption[]>([]);
+  const [workspaceReportsMap, setWorkspaceReportsMap] = useState<Map<string, string[]>>(new Map());
+  const [fetchedWorkspaces, setFetchedWorkspaces] = useState<Set<string>>(new Set());
   const { data: workspaces, isLoading: isLoadingWorkspaces } = useGetWorkspacesQuery();
-  const [getReports, { data: reports, isLoading: isLoadingReports }] = useLazyGetReportsByWorkspaceQuery();
+  const [getReports, { isLoading: isLoadingReports }] = useLazyGetReportsByWorkspaceQuery();
   const [scanForWidgets, { isLoading: isScanning }] = useScanForWidgetsMutation();
   const [downloadExcel, { isLoading: isDownloading }] = useLazyDownloadExcelQuery();
 
@@ -122,25 +125,80 @@ export default function WidgetScannerPage() {
         { id: 'f589cf89-db7d-4422-9722-553233ac5135', label: 'PBI Cone Test', value: 'f589cf89-db7d-4422-9722-553233ac5135' },
       ];
 
-  const reportOptions: DropdownOption[] = reports
-    ? reports.map((report) => ({
-        id: report.id,
-        label: report.name,
-        value: report.id,
-      }))
-    : [];
-
   // Fetch reports when workspace selection changes
   useEffect(() => {
     if (selectedWorkspaces.length > 0) {
-      // Fetch reports for the first selected workspace
-      const workspaceId = selectedWorkspaces[0].toString();
-      getReports(workspaceId);
+      const selectedWorkspaceIds = new Set(selectedWorkspaces.map(id => id.toString()));
+      
+      // Fetch reports for newly selected workspaces
+      const fetchPromises = selectedWorkspaces.map(async (workspaceId) => {
+        const workspaceIdStr = workspaceId.toString();
+        if (!fetchedWorkspaces.has(workspaceIdStr)) {
+          try {
+            const result = await getReports(workspaceIdStr).unwrap();
+            
+            if (result && result.length > 0) {
+              const newReports = result.map((report) => ({
+                id: report.id,
+                label: report.name,
+                value: report.id,
+              }));
+
+              const reportIds = result.map(report => report.id);
+
+              setAllReports((prevReports) => {
+                const existingIds = new Set(prevReports.map((r) => r.id));
+                const uniqueNewReports = newReports.filter((r) => !existingIds.has(r.id));
+                return [...prevReports, ...uniqueNewReports];
+              });
+
+              setWorkspaceReportsMap(prev => new Map(prev).set(workspaceIdStr, reportIds));
+              setFetchedWorkspaces((prev) => new Set([...prev, workspaceIdStr]));
+            }
+          } catch (error) {
+            console.error(`Failed to fetch reports for workspace ${workspaceIdStr}:`, error);
+          }
+        }
+      });
+
+      // Remove reports from deselected workspaces
+      const deselectedWorkspaces = Array.from(fetchedWorkspaces).filter(
+        wsId => !selectedWorkspaceIds.has(wsId)
+      );
+
+      if (deselectedWorkspaces.length > 0) {
+        const reportsToRemove = new Set<string>();
+        deselectedWorkspaces.forEach(wsId => {
+          const reportIds = workspaceReportsMap.get(wsId) || [];
+          reportIds.forEach(reportId => reportsToRemove.add(reportId));
+        });
+
+        setAllReports(prev => prev.filter(report => !reportsToRemove.has(report.id.toString())));
+
+        setWorkspaceReportsMap(prev => {
+          const newMap = new Map(prev);
+          deselectedWorkspaces.forEach(wsId => newMap.delete(wsId));
+          return newMap;
+        });
+
+        setFetchedWorkspaces(prev => {
+          const newSet = new Set(prev);
+          deselectedWorkspaces.forEach(wsId => newSet.delete(wsId));
+          return newSet;
+        });
+
+        setSelectedReports(prev => 
+          prev.filter(reportId => !reportsToRemove.has(reportId.toString()))
+        );
+      }
     } else {
-      // Clear reports if no workspace is selected
+      setAllReports([]);
+      setWorkspaceReportsMap(new Map());
+      setFetchedWorkspaces(new Set());
       setSelectedReports([]);
     }
-  }, [selectedWorkspaces, getReports]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWorkspaces]);
 
   const handleScan = async () => {
     if (selectedWorkspaces.length === 0 || selectedReports.length === 0) {
@@ -306,14 +364,14 @@ export default function WidgetScannerPage() {
             selectedValues={selectedWorkspaces}
             onChange={setSelectedWorkspaces}
             placeholder={isLoadingWorkspaces ? 'Loading workspaces...' : 'Choose an option'}
-            multiSelect={false}
+            multiSelect={true}
             showTags={true}
             tagColor="red"
             className="w-[50%]"
           />
           <Dropdown
             label="Select Reports"
-            options={reportOptions}
+            options={allReports}
             selectedValues={selectedReports}
             onChange={setSelectedReports}
             placeholder={isLoadingReports ? 'Loading reports...' : selectedWorkspaces.length === 0 ? 'Select a workspace first' : 'Choose reports'}
