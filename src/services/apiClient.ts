@@ -7,6 +7,15 @@ interface FetchOptions extends RequestInit {
   headers?: HeadersInit;
 }
 
+// Store MSAL instance reference (will be set from App.tsx)
+let msalInstance: any = null;
+let msalAccount: any = null;
+
+export const setMsalContext = (instance: any, account: any) => {
+  msalInstance = instance;
+  msalAccount = account;
+};
+
 export const apiClient = {
   async fetch(endpoint: string, options: FetchOptions = {}) {
     const token = authService.getStoredToken();
@@ -26,7 +35,48 @@ export const apiClient = {
     });
 
     if (response.status === 401) {
-      // Token expired or invalid
+      // Token expired or invalid - try to refresh
+      console.log("401 error - attempting token refresh...");
+
+      if (msalInstance && msalAccount) {
+        try {
+          // Try to refresh MSAL token silently
+          const tokenResponse = await msalInstance.acquireTokenSilent({
+            scopes: [
+              "User.Read",
+              "https://analysis.windows.net/powerbi/api/Tenant.Read.All",
+            ],
+            account: msalAccount,
+            forceRefresh: true,
+          });
+
+          if (tokenResponse.idToken) {
+            // Exchange new MSAL token for backend token
+            await authService.getBackendToken(tokenResponse.idToken);
+
+            // Retry the original request with new token
+            const newToken = authService.getStoredToken();
+            if (newToken) {
+              (headers as Record<string, string>)[
+                "Authorization"
+              ] = `Bearer ${newToken}`;
+              const retryResponse = await fetch(`${API_BASE_URL}${endpoint}`, {
+                ...options,
+                headers,
+              });
+
+              if (retryResponse.ok) {
+                console.log("Request successful after token refresh");
+                return retryResponse;
+              }
+            }
+          }
+        } catch (refreshError) {
+          console.error("Token refresh failed:", refreshError);
+        }
+      }
+
+      // If refresh failed or not possible, clear tokens and redirect to login
       authService.clearTokens();
       window.location.href = "/";
       throw new Error("Authentication expired. Please login again.");

@@ -4,6 +4,7 @@ import { useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { useAppSelector, useAppDispatch } from './store/hooks';
 import { login } from './store/slices/authSlice';
 import { authService } from './services/authService';
+import { setMsalContext } from './services/apiClient';
 import LoginPage from './pages/LoginPage';
 import WidgetScannerPage from './pages/WidgetScannerPage';
 import PrivateRoute from './components/PrivateRoute';
@@ -15,9 +16,21 @@ function App() {
   const { accounts, instance } = useMsal();
   const dispatch = useAppDispatch();
 
+  // Set MSAL context for API client token refresh
+  useEffect(() => {
+    if (accounts.length > 0) {
+      setMsalContext(instance, accounts[0]);
+    }
+  }, [instance, accounts]);
+
   // Check if user is authenticated via MSAL on app load/refresh
   useEffect(() => {
     const restoreSession = async () => {
+      // Don't restore session if user explicitly logged out
+      if (authService.isLoggedOut()) {
+        return;
+      }
+
       if (isMsalAuthenticated && accounts.length > 0 && !isAuthenticated) {
         const account = accounts[0];
         console.log("ACCOUNT:",account);
@@ -35,7 +48,7 @@ function App() {
           // Token expired or doesn't exist, try to get a new one
           try {
             const tokenResponse = await instance.acquireTokenSilent({
-              scopes: ['User.Read'],
+              scopes: ['User.Read', 'https://analysis.windows.net/powerbi/api/Tenant.Read.All'],
               account: account,
             });
             

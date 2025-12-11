@@ -64,11 +64,22 @@ export const authService = {
     localStorage.removeItem("backend_refresh_token");
     localStorage.removeItem("backend_token_expiry");
 
+    // Set logout flag to prevent auto-restore
+    sessionStorage.setItem("user_logged_out", "true");
+
     // Clear all MSAL related items from localStorage
     Object.keys(localStorage).forEach((key) => {
       if (key.startsWith("msal.") || key.includes("msal")) {
         localStorage.removeItem(key);
       }
     });
+  },
+
+  isLoggedOut(): boolean {
+    return sessionStorage.getItem("user_logged_out") === "true";
+  },
+
+  clearLogoutFlag(): void {
+    sessionStorage.removeItem("user_logged_out");
   },
 };

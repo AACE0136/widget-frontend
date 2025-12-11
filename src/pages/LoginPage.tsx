@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../store/hooks';
@@ -14,6 +14,11 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { instance } = useMsal();
+
+  // Clear logout flag when user lands on login page
+  useEffect(() => {
+    authService.clearLogoutFlag();
+  }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
