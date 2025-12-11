@@ -7,15 +7,6 @@ interface FetchOptions extends RequestInit {
   headers?: HeadersInit;
 }
 
-// Store MSAL instance reference (will be set from App.tsx)
-let msalInstance: any = null;
-let msalAccount: any = null;
-
-export const setMsalContext = (instance: any, account: any) => {
-  msalInstance = instance;
-  msalAccount = account;
-};
-
 export const apiClient = {
   async refreshToken(): Promise<string | null> {
     const refreshToken = localStorage.getItem("backend_refresh_token");

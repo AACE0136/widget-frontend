@@ -4,7 +4,6 @@ import { useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { useAppSelector, useAppDispatch } from './store/hooks';
 import { login } from './store/slices/authSlice';
 import { authService } from './services/authService';
-import { setMsalContext } from './services/apiClient';
 import LoginPage from './pages/LoginPage';
 import WidgetScannerPage from './pages/WidgetScannerPage';
 import PrivateRoute from './components/PrivateRoute';
@@ -15,13 +14,6 @@ function App() {
   const isMsalAuthenticated = useIsAuthenticated();
   const { accounts, instance } = useMsal();
   const dispatch = useAppDispatch();
-
-  // Set MSAL context for API client token refresh
-  useEffect(() => {
-    if (accounts.length > 0) {
-      setMsalContext(instance, accounts[0]);
-    }
-  }, [instance, accounts]);
 
   // Check if user is authenticated via MSAL on app load/refresh
   useEffect(() => {
