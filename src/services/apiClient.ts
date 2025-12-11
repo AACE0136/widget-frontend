@@ -17,6 +17,50 @@ export const setMsalContext = (instance: any, account: any) => {
 };
 
 export const apiClient = {
+  async refreshToken(): Promise<string | null> {
+    const refreshToken = localStorage.getItem("backend_refresh_token");
+    if (!refreshToken) {
+      return null;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          refresh_token: refreshToken,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Refresh token request failed");
+      }
+
+      const data = await response.json();
+      console.log("REFRESH RESPONSE:", data);
+
+      // Store new tokens
+      if (data.access_token) {
+        localStorage.setItem("backend_token", data.access_token);
+      }
+      if (data.refresh_token) {
+        console.log("BACKEND REFRESH TOKEN:", data.refresh_token);
+        localStorage.setItem("backend_refresh_token", data.refresh_token);
+      }
+      if (data.expiresIn) {
+        const expiryTime = Date.now() + data.expiresIn * 3000;
+        localStorage.setItem("backend_token_expiry", expiryTime.toString());
+      }
+
+      return data.access_token;
+    } catch (error) {
+      console.error("Failed to refresh token:", error);
+      return null;
+    }
+  },
+
   async fetch(endpoint: string, options: FetchOptions = {}) {
     const token = authService.getStoredToken();
 
@@ -38,45 +82,27 @@ export const apiClient = {
       // Token expired or invalid - try to refresh
       console.log("401 error - attempting token refresh...");
 
-      if (msalInstance && msalAccount) {
-        try {
-          // Try to refresh MSAL token silently
-          const tokenResponse = await msalInstance.acquireTokenSilent({
-            scopes: [
-              "User.Read",
-              "https://analysis.windows.net/powerbi/api/Tenant.Read.All",
-            ],
-            account: msalAccount,
-            forceRefresh: true,
-          });
+      // First, try to refresh using backend refresh token
+      const newToken = await this.refreshToken();
 
-          if (tokenResponse.idToken) {
-            // Exchange new MSAL token for backend token
-            await authService.getBackendToken(tokenResponse.idToken);
+      if (newToken) {
+        console.log("Token refreshed successfully using refresh token");
+        // Retry the original request with new token
+        (headers as Record<string, string>)[
+          "Authorization"
+        ] = `Bearer ${newToken}`;
+        const retryResponse = await fetch(`${API_BASE_URL}${endpoint}`, {
+          ...options,
+          headers,
+        });
 
-            // Retry the original request with new token
-            const newToken = authService.getStoredToken();
-            if (newToken) {
-              (headers as Record<string, string>)[
-                "Authorization"
-              ] = `Bearer ${newToken}`;
-              const retryResponse = await fetch(`${API_BASE_URL}${endpoint}`, {
-                ...options,
-                headers,
-              });
-
-              if (retryResponse.ok) {
-                console.log("Request successful after token refresh");
-                return retryResponse;
-              }
-            }
-          }
-        } catch (refreshError) {
-          console.error("Token refresh failed:", refreshError);
+        if (retryResponse.ok) {
+          console.log("Request successful after token refresh");
+          return retryResponse;
         }
       }
 
-      // If refresh failed or not possible, clear tokens and redirect to login
+      // If refresh failed, clear tokens and redirect to login
       authService.clearTokens();
       window.location.href = "/";
       throw new Error("Authentication expired. Please login again.");

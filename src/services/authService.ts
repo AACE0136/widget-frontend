@@ -3,7 +3,7 @@ const API_BASE_URL =
 
 interface TokenResponse {
   access_token: string;
-  refreshToken?: string;
+  refresh_token: string;
   expiresIn?: number;
 }
 
@@ -28,8 +28,9 @@ export const authService = {
 
       // Store token in localStorage
       localStorage.setItem("backend_token", data.access_token);
-      if (data.refreshToken) {
-        localStorage.setItem("backend_refresh_token", data.refreshToken);
+      console.log("BACKEND TOKEN:", data);
+      if (data.refresh_token) {
+        localStorage.setItem("backend_refresh_token", data.refresh_token);
       }
       if (data.expiresIn) {
         const expiryTime = Date.now() + data.expiresIn * 1000;
