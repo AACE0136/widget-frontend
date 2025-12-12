@@ -25,6 +25,13 @@ export const apiClient = {
         }),
       });
 
+      if (response.status === 401) {
+        console.error("Refresh token is unauthorized - logging out");
+        authService.clearTokens();
+        window.location.href = "/";
+        return null;
+      }
+
       if (!response.ok) {
         throw new Error("Refresh token request failed");
       }

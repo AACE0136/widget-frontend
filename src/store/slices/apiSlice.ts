@@ -107,7 +107,11 @@ const baseQueryWithReauth: BaseQueryFn<
           }),
         });
 
-        if (refreshResponse.ok) {
+        if (refreshResponse.status === 401) {
+          console.error("Refresh token is unauthorized - logging out");
+          authService.clearTokens();
+          window.location.href = "/";
+        } else if (refreshResponse.ok) {
           const data = await refreshResponse.json();
 
           // Store new tokens

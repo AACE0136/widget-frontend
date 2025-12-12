@@ -39,7 +39,7 @@ export default function WidgetScannerPage() {
       const selectedWorkspaceIds = new Set(selectedWorkspaces.map(id => id.toString()));
       
       // Fetch reports for newly selected workspaces
-      const fetchPromises = selectedWorkspaces.map(async (workspaceId) => {
+     selectedWorkspaces.map(async (workspaceId) => {
         const workspaceIdStr = workspaceId.toString();
         if (!fetchedWorkspaces.has(workspaceIdStr)) {
           try {
