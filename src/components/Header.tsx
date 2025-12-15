@@ -10,6 +10,22 @@ export default function Header() {
   const dispatch = useAppDispatch();
   const { instance } = useMsal();
   const authMethod = useAppSelector((state) => state.auth.authMethod);
+  const user = useAppSelector((state) => state.auth.user);
+
+  // Get user initials from name or email
+  const getUserInitials = () => {
+    if (user?.name) {
+      const nameParts = user.name.trim().split(' ');
+      if (nameParts.length >= 2) {
+        return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
+      }
+      return user.name.substring(0, 2).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.substring(0, 2).toUpperCase();
+    }
+    return 'U';
+  };
 
   const handleLogout = async () => {
     // Show confirmation dialog
@@ -55,7 +71,7 @@ export default function Header() {
         
         <div className="flex items-center gap-4">
           <button className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-            JD
+            {getUserInitials()}
           </button>
         </div>
       </div>
