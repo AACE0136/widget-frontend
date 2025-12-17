@@ -65,6 +65,13 @@ interface ScanResponse {
   details: ScanDetailItem[];
   emailPreview: string;
   excelFileId: string;
+  friendly_path: string;
+  summary_path: string;
+}
+
+interface SendEmailRequest {
+  outCsvSum: string;
+  outCsvFriendly: string;
 }
 
 export type { ScanResponse, ScanSummaryItem, ScanDetailItem };
@@ -184,6 +191,15 @@ export const apiSlice = createApi({
       }),
     }),
 
+    // Send email mutation
+    sendEmail: builder.mutation<void, SendEmailRequest>({
+      query: (emailData) => ({
+        url: "/send-email",
+        method: "POST",
+        body: emailData,
+      }),
+    }),
+
     // Query example - GET request
     getUsers: builder.query<User[], void>({
       query: () => "/users",
@@ -233,6 +249,7 @@ export const {
   useLazyGetReportsByWorkspaceQuery,
   useScanForWidgetsMutation,
   useLazyDownloadExcelQuery,
+  useSendEmailMutation,
   useGetUsersQuery,
   useGetUserQuery,
   useCreateUserMutation,
