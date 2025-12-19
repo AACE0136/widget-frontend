@@ -1,15 +1,15 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import { useAppDispatch } from '../store/hooks';
 import { login } from '../store/slices/authSlice';
 import { loginRequest } from '../config/authConfig';
 import { authService } from '../services/authService';
+import LoginHeader from '../components/LoginHeader';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+
+  const [, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -20,17 +20,6 @@ export default function LoginPage() {
     authService.clearLogoutFlag();
   }, []);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (email === 'abc@gmail.com' && password === 'Test@123') {
-      dispatch(login({ email, method: 'basic' }));
-      navigate('/widget-scanner');
-    } else {
-      setError('Invalid credentials. Please use abc@gmail.com / Test@123');
-    }
-  };
 
   const handleMicrosoftLogin = async () => {
     setIsLoading(true);
@@ -69,15 +58,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Login</h1>
+    <div className="min-h-screen bg-white">
+      <LoginHeader />
+      <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+        <div className="w-full max-w-md px-4">
+        <div className="text-lg font-normal text-black italic mb-6  text-center">Log in your account</div>
         
         {/* Microsoft SSO Button */}
+        <div className='flex items-center justify-center'>
         <button
           onClick={handleMicrosoftLogin}
           disabled={isLoading}
-          className="w-full mb-4 px-4 py-3 bg-[#2F2F2F] text-white rounded-md hover:bg-[#1F1F1F] transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2.5 px-6 py-3 bg-white text-[#5e5e5e] border border-[#8c8c8c] rounded text-base font-medium cursor-pointer w-full opacity-100 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed max-w-[320px]"
         >
           {isLoading ? (
             <span>Signing in...</span>
@@ -93,64 +85,11 @@ export default function LoginPage() {
             </>
           )}
         </button>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or continue with</span>
-          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="abc@gmail.com"
-              required
-            />
-          </div>
+        
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Test@123"
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="text-red-600 text-sm text-center">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
-          >
-            Login
-          </button>
-        </form>
-
-        <div className="mt-4 text-sm text-gray-600 text-center">
-          <p>Demo credentials:</p>
-          <p className="font-mono">abc@gmail.com / Test@123</p>
+       
         </div>
       </div>
     </div>
