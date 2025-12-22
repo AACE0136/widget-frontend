@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, X, Check } from 'lucide-react';
+import { ChevronDown, X, Check, Search } from 'lucide-react';
 
 export interface DropdownOption {
   id: string | number;
@@ -34,7 +34,9 @@ export default function Dropdown({
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<(string | number)[]>(selectedValues);
+  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setSelected(selectedValues);
@@ -44,12 +46,19 @@ export default function Dropdown({
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setSearchQuery('');
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen]);
 
   const handleSelect = (optionId: string | number) => {
     let newSelected: (string | number)[];
@@ -79,6 +88,10 @@ export default function Dropdown({
   const getSelectedOptions = () => {
     return options.filter((opt) => selected.includes(opt.id));
   };
+
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const tagColorClasses = {
     red: 'bg-red-500 text-white hover:bg-red-600',
@@ -138,31 +151,49 @@ export default function Dropdown({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {options.length === 0 ? (
-            <div className="px-4 py-3 text-sm text-gray-500">No options available</div>
-          ) : (
-            options.map((option) => {
-              const isSelected = selected.includes(option.id);
-              return (
-                <div
-                  key={option.id}
-                  onClick={() => handleSelect(option.id)}
-                  className={`
-                    px-4 py-3 cursor-pointer transition-colors text-sm
-                    ${isSelected ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}
-                  `}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>{option.label}</span>
-                    {multiSelect && isSelected && (
-                      <Check size={20} className="text-red-600" />
-                    )}
+        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col">
+          <div className="px-3 py-2 border-b border-gray-200 sticky top-0 bg-white">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+          <div className="overflow-y-auto">
+            {filteredOptions.length === 0 ? (
+              <div className="px-4 py-3 text-sm text-gray-500">
+                {searchQuery ? 'No matching options' : 'No options available'}
+              </div>
+            ) : (
+              filteredOptions.map((option) => {
+                const isSelected = selected.includes(option.id);
+                return (
+                  <div
+                    key={option.id}
+                    onClick={() => handleSelect(option.id)}
+                    className={`
+                      px-4 py-3 cursor-pointer transition-colors text-sm
+                      ${isSelected ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-700 hover:bg-gray-100'}
+                    `}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>{option.label}</span>
+                      {multiSelect && isSelected && (
+                        <Check size={20} className="text-red-600" />
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
       )}
     </div>
